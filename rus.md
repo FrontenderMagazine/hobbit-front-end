@@ -1,3 +1,6 @@
+#Фронтенд для сайта Средиземья
+*Обзор разработки под разные устройства*
+
 * Три версии одного и того же сайта
 * Управление состоянием
 * Места съёмки
@@ -5,16 +8,13 @@
 * Анимации
 * Выводы
 
-#Фронтенд для сайта Средиземья
-*Обзор разработки под разные устройства*
-
 В [нашей первой статье][1] о разработке эксперимента для Google Chrome
 [A Journey Through Middle-earth][2] мы сконцентрировались на работе с  WebGL
 для мобильных устройств. В этой статье мы рассмотрим все задачи, проблемы и их
 решения, к которым мы пришли в процессе работы над остальной частью фронтенда
 на HTML5.
 
-## Три версии одного и того же сайта {#toc-three-versions}
+## Три версии одного и того же сайта
 
 Давайте начнём с вопроса об адаптации этого сайта-эксперимента для работы и с
 настольными компьютерами, и с мобильными устройствами с точки зрения изменения
@@ -28,8 +28,10 @@
 Можно привести посадочную страницу сайта, как пример того, как мы адаптировали
 дизайн для разных размеров экрана.
 
-![][3]
+<figure>
+![][3]<figcaption>
 *Орлы только что принесли нас на посадочную страницу.*
+</figcaption></figure>
 
 У сайта есть три разных режима: настольный, планшет и мобильный. Это не только
 для того, что бы управлять версткой, но и для того, чтобы управлять временно
@@ -85,7 +87,7 @@ media-queries нам необходимо было добавить эффект
 хорошо адаптирован под любой размер экрана, поэтому мы оставили эту возможность.
 
 
-* **События DeviceOrientation** Вёрстка контента управляется контрольными точками
+> NOTE: **События DeviceOrientation** Вёрстка контента управляется контрольными точками
 и CSS, но также нам нужно знать, когда происходит изменения ориентации устройства
 в JavaScript, чтобы приостанавливать игры и анимации, и сохранять при этом
 правильное состояние. Оказывается, что нельзя так уж полагаться на значение
@@ -118,7 +120,7 @@ Canary, в котором он предлагает улучшенные воз�
 памяти и измерения производительности.
 
 
-## Управление состоянием {#toc-state}
+## Управление состоянием
 
 Сразу за [посадочной страницей][2] мы попадаем на карту Средиземья. Вы обратили
 внимание на то, что адрес поменялся? Сайт — это одностраничное приложение,
@@ -153,13 +155,14 @@ Canary, в котором он предлагает улучшенные воз�
 скоростью, как, например, в «рядах» картинок, когда можно остановить движение до
 того, как клип закончился.
  
-> Полоса прокрутки предполагает определённый тип поведения. Если сайт неожиданно
-> перехватывает управление этим элементом, то это может оставить неприятное 
-> впечатление у пользователя.
+> NOTE Полоса прокрутки предполагает определённый тип поведения. Если сайт неожиданно
+перехватывает управление этим элементом, то это может оставить неприятное 
+впечатление у пользователя.
 *Einar Öberg*
 
+<figure>
 ![][7]
-*Таймлайн для [Thranduil's Hall][8]*
+<figcaption>*Таймлайн для [Thranduil's Hall][8]*</figcaption></figure>
 
 ### Таймлайны
 В начале разработки мы не знали, какой именно контент будет в каждом модуле. Но
@@ -249,136 +252,204 @@ Canary, в котором он предлагает улучшенные воз�
 [пример на GitHub][14], который показывает, как создать спрайт из
 картинок в папке.
         
-### Анимация модулей.
-To place the modules on the timeline, a hidden representation of the timeline,
-displayed offscreen, keeps track on the ‘playhead’ and the width of the timeline. This can be done with just code, but it was good with a visual representation when developing and debugging. When running for real it’s just updated on resize to set dimensions. Some modules fills the viewport and some have their own ratio, so it was a little tricky to scale and position everything in all resolutions so everything is visible and not cropped too much. Each module has two progress indicators, one for the visible position on screen and one for the duration of the module itself. When making parallax movement it’s often hard to calculate start- and end-position of objects to sync with the expected position when it’s in view. It’s good to know exactly when a module enters the view, plays its internal timeline and when it animates out of view again.
+### Анимация модулей
+Когда модули размещены в таймлайне, в специальном скрытом блоке создаётся
+их условное представление, которое связано с позицией и размерами модулей.
+Мы сделали и визуальное отображение для этого инструмента, чтобы легче 
+проводить отладку. На работающем проекте он, конечно, скрыт и в нём обновляются
+только размеры и положение элементов. Из-за того, что некоторые 
+модули заполняют экран полностью, а некоторые имеют свои фиксированные
+соотношения сторон, правильно размещать и масштабировать все элементы
+так, чтобы они оставались видимыми и не слишком обрезаны, было довольно
+непростой задачей. Каждый модуль имеет два индикатора прогресса — первый для
+видимой на экране части и второй для измерения длительности самого модуля. При
+создании движения в параллакс-сцене часто бывает сложно рассчитать начальную и
+конечную позицию объектов с тем, чтобы синхронизировать с позицией, когда они
+в зоне видимости. Гораздо проще работать, когда точно знаешь, что сейчас
+происходит с модулем — находится ли он на экране, на каком этапе его
+внутренняя анимация и когда он исчезает. 
 
-<figure></figure>
+<figure><iframe
+    src="http://demo.northkingdom.com/hobbit/timeline/"
+    frameborder="0" width="660" height="440">
+</iframe></figure>
 
-Each module has a subtle black layer on top that adjusts its opacity so it’s fully transparent when it’s in the center position. This helps you to focus on one module at a time, which enhances the experience.
+Поверх контента каждого модуля есть слой с чёрной заливкой, который становится
+полностью прозрачным, когда модуль в центральной позиции и видим на экране. Так
+пользователю гораздо легче сосредоточиться на содержании.
 
+### Производительность
 
+Прогресс от функционального прототипа к плавно работающей релизной версии 
+означает переход от угадывания к уверенности в том, что происходит в браузере.
+Это тот момент, когда инструмент DevTools в Chrome становится лучшим другом.
 
-### Page performance
+Мы провели довольно много времени, оптимизируя сайт. Использование аппаратного
+ускорения — один из самых важных способов обеспечить плавные переходы и
+анимации. Кроме этого, нужно охототиться за [цветными колонками][15] и красными
+прямоугольниками в DevTools. На эту тему достаточно материала, и вам следует
+прочитать его [целиком][16]. Устранение «проскакивающих» кадров в анимации 
+мгновенно приносит облегчение, но при их повторном появлении это так же
+неприятно. И они будут снова появляться. Это процесс, растянутый во времени и
+требующий нескольких итераций.
 
-Moving from a functioning prototype to a jank-free release version means going from guessing to knowing of what happens in the browser. This is where Chrome DevTools is your best friend.
+> NOTE Следите за панелью `layers` (только в Chrome Canary) и `paint rectangles`
+в DevTools. Например, если дочерние элементы нужно обновлять на каждом кадре,
+стоит проверить, не будет ли быстрее изменять порядок элементов, чтобы 
+отрисовывать, как можно меньше.
 
-We have spent quite a lot of time optimising the site. Forcing hardware-acceleration is one of the most important tools of course to get smooth animations. But also hunting 
+Я люблю TweenMax от Greensock для зацикливания свойств, трансформаций и CSS.
+Визуализируйте структуру при добавлении новых слоёв. Имейте в виду, что
+существующие трансформации могут быть перезаписаны новыми. Свойство
+`translateZ(0)`, которое приводит к принудительному использованию аппаратного
+ускорения для CSS, заменяется на двумерную матрицу, если нужно зациклить только
+двумерные (2D) значения. Поэтому если для этого слоя всё же нужно использовать
+аппаратное ускорение, можно установить значение `force3D:true` в цикле для
+превращение двумерной матрицы в трёхмерную. Легко упустить эти мелочи в
+стилях, когда смешиваешь CSS и JavaScript при анимации.
 
-[colorful columns][15] and red rectangles in Chrome DevTools. There are many good articles about the topics, and you should read them [all][16]. The reward for removing skipping frames is instant, but so is the frustration when they return again. And they will. It's an ongoing process that needs iterations.
+Не используйте принудительное ускорение, когда это не нужно. Память
+графического процессора может быстро закончиться, что может вызвать
+нежелательные последствия, если вы хотите применять ускорение для многих
+контейнеров, особенно это актуально для iOS, где память имеет более жёсткие
+ограничения. Загрузка менее «тяжёлых» ресурсов и их масштабирование с помощью
+CSS, а также отключение некоторых эффектов для мобильных привело к отличным
+улучшениям в работе.
 
-Watch the layers panel (only in Canary) and the “paint rectangles” in Chrome DevTools. If, for example, child elements need to be updated per frame and be painted you should investigate if it’s faster to rearrange the layers to minimize the areas that need to be painted as much as possible.
-
-
-
-I like to use TweenMax from Greensock for tweening properties, transforms and CSS. Think in containers, visualise your structure as you add new layers. Keep in mind that existing transforms can be overwritten by new transforms. The translateZ(0) that forced hardware acceleration in your CSS class is replaced by a 2D matrix if you tween 2D values only. To keep the layer in acceleration mode in those cases, use the property “force3D:true” in the tween to make a 3D matrix instead of a 2D matrix. It’s easy to forget when you combine CSS and JavaScript tweens to set styles.
-
-
-
-Don’t force hardware acceleration where it’s not needed. GPU memory can quickly fill up and cause unwanted results when you want to hardware-accelerate many containers, especially on iOS where memory have more constraints. To load smaller assets and scale them up with css and disable some of the effects in mobile mode made huge improvements.
-
-
-
-[Memory leaks][17] was another field we needed to improve our skills in. When navigating between the different WebGL experiences a lot of objects, materials, textures and geometry are created. If those are not ready for garbage collection when you navigate away and remove the section they will probably cause the device to crash after a while when it runs out of memory.
+[Утечки памяти][17] явились ещё одним полем, где нам пришлось существенно
+улучшить свои навыки. При навигации между разными WebGL-сценами создаётся 
+много разнообразных объектов, материалов, текстур и геометрических данных.
+Если всё это вовремя не очищать, то, скорее всего, при следующем переходе память
+закончится и это приведёт к «падению» устройства.
 
 <figure>
-
-![][18]<figcaption>Exiting a section with a failing dispose function.</figcaption></figure><figure>![][19]<figcaption>Much better!</figcaption></figure>
-To find the leak it was pretty straight forward workflow in DevTools, recording the timeline and capturing heap snapshots. It’s easier if there are specific objects, like 3D geometry or a specific library, that you can filter out. In the example above it turned out that the 3D scene was still around and also an array that stored geometry was not cleared. If you find it hard to locate where the object lives, there is a nice feature that let you view this called [retaining paths][20]. Just click the object you want to inspect in the heap snapshot and you get the information in a panel below. Using a good structure with smaller objects helps when locating your references.
-
-<figure>
-
-![][21]<figcaption>The scene was referenced in the EffectComposer.</figcaption></figure>
-In general, it's healthy to think twice before you manipulate the DOM. When you do, think about efficiency. Don't manipulate the DOM inside a game loop if you can help it. Store references in variables for reuse. If you need to search for an element, use the shortest route by storing references to strategic containers and searching inside the nearest ancestor element.
-
-
-
-Delay reading dimensions of newly added elements or when removing/adding classes if you experience layout bugs. Or make sure [Layout is triggered][22]. Sometimes the browser batch changes to styles, and will not update after the next layout trigger. This can really be a big problem sometimes, but it’s there for a reason, so try to learn how it’s working behind the scenes and you will gain a lot.
-
-
-
-### Fullscreen
-
-
-When available, you have the option to put the site in fullscreen-mode in the menu via the Fullscreen API. But on devices there is also the browsers decision to put it into fullscreen. Safari on iOS had previously a hack to let you control that, but that is not available anymore so you have to prepare your design to work without it when making a non-scrolling page. We can probably expect updates on this in future updates, since it has broke a lot of web-apps.
-
-
-
-## Assets {#toc-assets}
+![][18]
+<figcaption>*Выход из радела с плохо работающей функцией очистки.*</figcaption>
+</figure><figure>
 
 <figure>
+![][19]<figcaption>*Намного лучше!*</figcaption></figure>
 
-![][23]<figcaption>Animated instructions for the experiments.</figcaption></figure>
-Throughout the site we have a lot of different types of assets, we use images (PNG and JPEG), SVG (inline and background), spritesheets (PNG), custom icon fonts and Adobe Edge animations. We use PNGs for assets and animations (spritesheets) where the element can't be vector based, otherwise we try to use SVGs as much as possible.
+Для нахождения утечек мы использовали профилирование в DevTools и сохраняли
+отчёты. Легче приходится, когда есть конкретные объекты, которые легко
+отследить, например, трёхмерная геометрия или определённая библиотека. В
+примере, приведённом выше, оказалось, что трёхмерная сцена и массив с данными
+всё ещё находились в памяти. Если всё же возникают сложности с поиском нужного
+объекта, рекомендуем прибегнуть к любопытной фиче [retaining paths][20].
+Достаточно нажать на интересующий элемент в отчёте профайлера и можно получить
+информацию о нём в панели снизу. Хорошая структура, построенная на небольших
+объектах помогает при поиске этих связей.
+
+<figure>
+![][21]
+<figcaption>Сцена была вызвана EffectComposer.</figcaption>
+</figure>
+
+В целом, стоит подумать дважды прежде, чем манипулировать элементами в
+документе. Если вы всё-таки делаете это, не забывайте об эффективности. По
+возможности не двигайте элементы во время игрового цикла. Если нужно найти
+некоторый элемент используйте самый короткий путь, сохраняя ссылки к главным
+контейнерам и ищите внутри ближайшего родительского блока.
+
+В ситуациях, когда нужно узнать размеры вновь добавленных элементов, делайте
+это с небольшой задержкой, если иначе появляются баги. Также можно убедиться,
+[разметка инициализирована][22]. Иногда браузер собирает изменения для стилей в
+«пакет» и не применяет их до следующей инициализации. Это может привести к
+серьёзным проблемам, но это сделано неспроста, поэтому стоит понять природу
+такого поведения и научиться работать с ним.
+
+### Полноэкранный режим
+Некоторые модули позволяют перевести сайт в полноэкранный режим с помощью
+Fullscreen API. Но в мобильных браузерах существует ещё один порог
+ограничений установлен для этой возможности. Safari на iOS раньше позволял
+управлять переходом в полноэкранный режим, но сейчас это недоступно, поэтому
+стоит подготовить свой дизайн для работы в обычном режиме для страниц без 
+прокрутки. Мы полагаем, что стоит ожидать изменений в будущих обновлениях, так
+как запрет использования этой техонологии нарушило работу многих
+веб-приложений.
 
 
+## Ресурсы
+<figure>
+![][23]
+<figcaption>*Анимированные инструкции для экспериментов.*</figcaption>
+</figure>
 
-The vector format means no loss of quality, even if we scale it. 1 file for all devices.
+На сайте используются разные типы ресурсов: изображения (PNG и JPEG), SVG
+(в контент и в фоне), спрайты (PNG), нестандартные иконочные шрифты и анимации
+из Adobe Edge. Мы используем PNG для основных ресурсов и анимаций (в виде 
+спрайтов), когда элемент не может быть реализован векторно, но для всех других
+случаев мы стараемся использовать SVG.
+
+Векторный формат означает отсутствие потерь качества, даже при масштабировании.
+Один файл для всех типов устройств.
+
+*   Маленький размер файл.
+*   Каждая часть может быть анимирована независимо (особенно удобно для
+сложных анимаций). Как пример можно привести подзаголовок в логотипе Хоббита
+(*the desolation of Smaug*) при масштабировании.
+*   Может использоваться и как тэг SVG, и как фоновое изображение без каких бы
+бы то ни было дополнительных подгрузок (загружается вместе с остальной частью
+страницы).
+
+Иконочные шрифты обладают теми же преимуществами, что и SVG, когда речь идёт о
+масштабировании и используется вместо SVG для небольших элементов, для которых 
+нужно изменять только цвет (например, состояние кнопок — активна, ховер и
+т.д.). Иконки также очень удобны для повторного использования, достаточно
+изменить CSS свойство `content`.
 
 
-*   Small file size.
-*   We can animate each part separately (perfect for advanced animations). As
-        an example we hide the "subtitle" of the Hobbit logo (the desolation of Smaug) 
-        when it's scaled down.
-     
-*   It can be embedded as an SVG HTML tag or used as a background-image with no
-        extra loading (it’s loaded the same time as the html page
-        ).
+## Анимации
+В некоторых случаев анимирование SVG-элементов с помощью скриптов может быть
+довольно трудозатратным, особенно, если анимация меняется во время правок
+дизайна. Для улучшения взаимодействия дизайнеров и разработчиков мы иногда
+используем Adobe Edge (например, для инструкций перед играми). Процесс работы
+над анимацией очень похож на работу с Flash и это помогло нашей команде, но всё
+ещё есть недочёты, что связано с внедрением Edge-анимаций в загрузку наших
+ресурсов, так как Adobe использует собственные загрузчики и логику внедрения.
 
-Icon typefaces have the same advantages as SVG when it comes to scalability and
-are used instead of SVG for small elements like icons on which we only need to 
-be able to change the colour (hover, active, etc.). The icons are also very easy
-to reuse, you just need to set the CSS "content" property of an element.
+Я думаю, что нам предстоит ещё долгий путь по оттачиванию процесса работы с
+ресурсами и анимаций, сделанными «вручную». Мы с интересом наблюдаем за
+развитием инструментов вроде Edge. С удовольствием выслушаем ваши предложения
+на эту тему в комментариях.
 
-## Animations {#toc-animations}
 
-In some cases animating SVG elements with code can be very time consuming,
-especially when the animation needs to be changed a lot during the design 
-process. To improve the workflow between designers and developers we use Adobe 
-Edge for some animations (the instructions before the games). The animation 
-workflow is really close to Flash and that helped the team but there are a few 
-drawbacks, especially with integrating the Edge animations in our asset loading 
-process since it comes with it’s own loaders and implementation logic.
+## Выводы
+Сейчас, когда весь проект запущен и я смотрю на конечный результат, могу
+сказать, что я довольно впечатлён уровнем современных мобильных браузеров. В 
+начале работы над этим сайтом наши ожидания насчёт того, насколько плавно и 
+красиво всё будет работать, были намного ниже. Это был отличный опыт для всех
+нас, и всё время, потраченное на разработку и тестирование (особенно на него)
+улучшили наше понимание того, как работают современные браузеры. И, конечно,
+это сократит время на разработку подобных проектов в будущем, путь от 
+угадывания к уверенности.
 
-I still feel we have a long way to go before we have a perfect workflow for
-handling assets and handmade animations on the web. We’re looking forward to 
-seeing how tools like Edge will evolve. Feel free to add suggestions on other 
-animation tools and workflows in the comments.
 
-## Conclusion {#toc-conclusion} Now when all the parts of the project are
-released and we look at the final result I must say we are quite impressed with 
-the state of modern mobile browsers. When we started off this project we had 
-much lower expectations on how seamless, integrated and performant we would be 
-able to make it. It's been a great learning experience for us and all the time 
-spent iterating and testing (a lot) has improved our understanding of how modern
-browsers work. And that's what it will take if we want to shorten the production
-time on these types of projects, going from guessing to knowing.
+[1]: http://www.html5rocks.com/en/tutorials/casestudies/hobbit/
+[2]: http://middle-earth.thehobbit.com/
+[3]: img/eagles.png
 
- [1]: http://www.html5rocks.com/en/tutorials/casestudies/hobbit/
- [2]: http://middle-earth.thehobbit.com/
- [3]: img/eagles.png
+[4]: https://developers.google.com/chrome-developer-tools/docs/mobile-emulation
+[5]: http://diveintohtml5.info/history.html
+[6]: http://visionmedia.github.io/page.js/
+[7]: img/thranduils-hall.jpg
+[8]: http://middle-earth.thehobbit.com/thranduils-hall
+[9]: http://www.greensock.com/draggable/
+[10]: http://www.greensock.com/throwprops/
+[11]: https://gist.github.com/inear/7626665
+[12]: http://awardwinningfjords.com/2012/03/08/image-sequences.html
+[13]: http://www.imagemagick.org/script/index.php
+[14]: https://gist.github.com/inear/7616849
 
- [4]: https://developers.google.com/chrome-developer-tools/docs/mobile-emulation
- [5]: http://diveintohtml5.info/history.html
- [6]: http://visionmedia.github.io/page.js/
- [7]: img/thranduils-hall.jpg
- [8]: http://middle-earth.thehobbit.com/thranduils-hall
- [9]: http://www.greensock.com/draggable/
- [10]: http://www.greensock.com/throwprops/
- [11]: https://gist.github.com/inear/7626665
- [12]: http://awardwinningfjords.com/2012/03/08/image-sequences.html
- [13]: http://www.imagemagick.org/script/index.php
- [14]: https://gist.github.com/inear/7616849
+[15]: https://developers.google.com/chrome-developer-tools/docs/tips-and-tricks#timeline-frames-mode
+[16]: http://jankfree.org/
+[17]: http://www.html5rocks.com/en/tutorials/memory/effectivemanagement/
+[18]: img/failing-dispose.png
+[19]: img/much-better.png
 
- [15]: https://developers.google.com/chrome-developer-tools/docs/tips-and-tricks#timeline-frames-mode
- [16]: http://jankfree.org/
- [17]: http://www.html5rocks.com/en/tutorials/memory/effectivemanagement/
- [18]: img/failing-dispose.png
- [19]: img/much-better.png
+[20]: https://developers.google.com/chrome-developer-tools/docs/heap-profiling?hl=sv&csw=1#views_paths
+[21]: img/effectcompositor.png
 
- [20]: https://developers.google.com/chrome-developer-tools/docs/heap-profiling?hl=sv&csw=1#views_paths
- [21]: img/effectcompositor.png
-
- [22]: http://www.html5rocks.com/en/tutorials/speed/high-performance-animations/#toc-animating-layout-properties
- [23]: img/instructions.jpg
- [24]: img/einaroberg.png
+[22]: http://www.html5rocks.com/en/tutorials/speed/high-performance-animations/#toc-animating-layout-properties
+[23]: img/instructions.jpg
+[24]: img/einaroberg.png
