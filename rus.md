@@ -5,7 +5,9 @@
 * Анимации
 * Выводы
 
-<section class="byline"></section>
+#Фронтенд для сайта Средиземья
+*Обзор разработки под разные устройства*
+
 В [нашей первой статье][1] о разработке эксперимента для Google Chrome
 [A Journey Through Middle-earth][2] мы сконцентрировались на работе с  WebGL
 для мобильных устройств. В этой статье мы рассмотрим все задачи, проблемы и их
@@ -26,9 +28,8 @@
 Можно привести посадочную страницу сайта, как пример того, как мы адаптировали
 дизайн для разных размеров экрана.
 
-<figure>![][3]
-<figcaption>Орлы только что принесли нас на посадочную страницу.
-</figcaption></figure>
+![][3]
+*Орлы только что принесли нас на посадочную страницу.*
 
 У сайта есть три разных режима: настольный, планшет и мобильный. Это не только
 для того, что бы управлять версткой, но и для того, чтобы управлять временно
@@ -117,176 +118,203 @@ Canary, в котором он предлагает улучшенные воз�
 памяти и измерения производительности.
 
 
-## Handling the state {#toc-state}
+## Управление состоянием {#toc-state}
 
-After the [landing page][2] we land at the map of Middle-earth. Did you notice
-the URL changing? The site is a single page application that uses the
-[History API][5] to handle [routing][6].
+Сразу за [посадочной страницей][2] мы попадаем на карту Средиземья. Вы обратили
+внимание на то, что адрес поменялся? Сайт — это одностраничное приложение,
+которое использует [History API][5] для [управления путями][6].
 
-Each section of the site is its own object inheriting a boilerplate of
-functionality such as DOM-elements, transitions, loading of assets, disposing 
-etc. When you explore different parts of the site, sections are initiated, 
-elements are added to and removed from the DOM and assets for the current 
-section are loaded.
+Каждая секция сайта — это отдельный объект, наследующий шаблон с основным
+функционалом, включая DOM-элементы, переходы, подгрузку ресурсов, сбор мусора
+и т.д. По ходу продвижения по сайту разные секции инициализируются, добавляя и
+удаляя элементы и ресурсы для конкретного раздела.
 
-Since the user can hit the browser’s back button or navigate via the menu at
-any time, everything that is created needs to be disposed of at some point. 
-Timeouts and animations need to be stopped and discarded or they will cause 
-unwanted behaviour, errors, and memory leaks. This is not always an easy task, 
-especially when deadlines are approaching and you need to get everything in 
-there as fast as possible.
+Так как пользователь может нажать кнопку «Назад» в браузере или передвигаться с
+помощью меню, то нужно следить и за очищением старых элементов. Таймауты и
+анимации должны быть остановлены и отменены, иначе это может вызвать
+нежелательные последствия, ошибки и утечки памяти. Это не всегда является
+простой задачей, особенно накануне дедлайна, когда нужно, чтобы всё заработало,
+как можно скорее.
 
-Keep calm and add those event listeners. Make a practice of adding a dispose
-function to every object. Watch out for leaving timers and tweens behind. If 
-tweening, use the equivalent of`TweenMax.killTweensOf(foo)` or save references
-and stop them from triggering callbacks. Remove runtime added DOM elements. Use 
-profiling tools regulary to keep an eye on the memory consumption and leaks.
+Однако достаточно просто отслеживать события. Хорошей практикой является
+добавление функции очистки для каждого объекта. Важно не забывать про таймеры и
+циклы анимаций. При использовании этих циклов, используйте эквивалент
+`TweenMax.killTweensOf(foo)` или сохраняйте ссылки на них в переменных и
+останавливайте вызов колбэков. Удаляйте временно созданные элементы DOM. Полезно
+часто обращаться к инструменту профилирования для контроля потребления памяти и
+утечек.
 
-## Showing off the locations {#toc-showing-off} To show off the beautiful
-settings and the characters of Middle-earth we built a modular system of image 
-and text components that you can drag or swipe horizontally. We haven’t enabled 
-a scrollbar here since we want to have different speeds on different ranges, 
-like in image sequences where you stop the motion sideways until the clip has 
-played out.<figure>
 
-![][7]<figcaption>[Thranduil's Hall][8] timeline</figcaption></figure>
-### The timeline When development started we didn’t know the content of the
-modules for each location. What we knew was that we wanted a templated way of 
-showing different types of media and information in a horizontal timeline that 
-would give us the freedom to have six different location presentations without 
-having to rebuild everything six times. To manage this we created a timeline 
-controller that handle the panning of its modules based on settings and the 
-modules’ behaviours.
+## Места съёмки {#toc-showing-off}
+Для того, чтобы показать места съёмки и персонажей Средиземья во всей красе
+мы построили модульную систему для картинок и текстов, которые можно двигать
+мышкой или пальцами на тач-устройствах по горизонтали. Полоса прокрутки не
+отображается, так как нам нужна была возможность двигать разные объекты с разной
+скоростью, как, например, в «рядах» картинок, когда можно остановить движение до
+того, как клип закончился.
+ 
+> Полоса прокрутки предполагает определённый тип поведения. Если сайт неожиданно
+> перехватывает управление этим элементом, то это может оставить неприятное 
+> впечатление у пользователя.
+*Einar Öberg*
 
-### Modules and behaviour components The different modules we added support for
-are image-sequence, still image, parallax scene, focus-shift scene and text. The
-parallax scene module has an opaque background with a custom number of layers 
-that listens to the viewport progress for exact positions. The focus-shift scene
-is a variant of the parallax bucket, with the addition that we use two images 
-for each layer which fades in and out to simulate a focus change. We tried to 
-use the blur filter, but it’s still to expensive, so we’ll wait for CSS shaders 
-for this. The content in the text module is drag-enabled with the TweenMax 
-plugin
+![][7]
+*Таймлайн для [Thranduil's Hall][8]*
 
-[Draggable][9]. You can also use the scrollwheel or two-finger swipe to scroll
-vertically. Note the[throw-props-plugin][10] that adds the fling-style physics
-when you swipe and release. The modules can also have different behaviours that 
-are added as a set of components. They all have their own target selectors and 
-settings. Translate to move an element, scale to zoom, hotspots for info overlay,
-debug metrics for testing visually, a start-title overlay, a flare layer, and 
-some more. These will be appended to the DOM or controlling their target element
-inside the module. With this in place we can create the different locations with
-just a[config file][11] that defines what assets to load and setup the
-different kinds of modules and components.
-### Image sequences
+### Таймлайны
+В начале разработки мы не знали, какой именно контент будет в каждом модуле. Но
+мы знали наверняка, что нам нужно будет подготовить некий шаблон для отображения
+разных типов медиа-файлов и информации в виде горизонтального таймлайна, что
+позволит нам показать шесть разных историй без перестраивания всей системы
+каждый раз. Для этого мы создали контроллер таймлайнов, чтобы управлять 
+«перетаскиванием» этих модулей с учётом настроек и особенностей каждого из них.
 
-The most challenging of the modules from a performance and a download-size
-aspect is the image sequence. There’s a bunch to read about this[topic][12]. On
-mobile and tablets we replace this with a still image. It’s too much data to 
-decode and store in memory if we want decent quality on mobile. We tried 
-multiple alternative solutions; using a background image and a spritesheet first,
-but it led to memory problems and lag when the GPU needed to swap between 
-spritesheets. Then we tried swapping img elements, but it was also too slow. 
-Drawing a frame from a spritesheet to a canvas was the most performant, so we 
-began optimizing that. To save computation time each frame, the image data to 
-write into the canvas is pre-processed via a temporary canvas and saved with 
-putImageData() to an array, decoded and ready to use. The original spritesheet 
-can then be garbage collected, and we store only the minimum amount of data 
-needed in memory. Maybe it’s actually less to store undecoded images, but we get
-better performance while scrubbing the sequence this way. The frames are pretty 
-small, just 640x400, but those will just be visible during scrubbing. When you 
-stop, a high-res image loads and quickly fades in.
 
-        var canvas = document.createElement('canvas');
-        canvas.width = imageWidth;
-        canvas.height = imageHeight;
+
+### Модули и компоненты поведения
+Мы создали отдельные модули для «рядов» картинок, статичных картинок, сцен с
+параллакс-эффектом, сцен с изменением фокуса и текста. Сцены с
+параллакс-эффектом имют непрозрачный фон и определённым количеством слоёв, 
+позиционирование которых связано с продвижением пользователя по странице. Сцены
+с изменением фокуса — это по сути подвид предыдущего модуля с тем отличием, что
+мы используем две картинки для каждого слоя, которые плавно исчезают, симулируя
+изменение фокуса. Мы пытались использовать CSS-фильтр blur, но он всё ещё
+слишком требователен к ресурсам устройства, поэтому стоит подождать официального
+выхода CSS-шейдеров. Текст в текстовых модулях можно «таскать» с помощью плагина
+[Draggable][9] от TweenMax. Кроме этого можно использовать колесо мыши или свайп
+двумя пальцами, чтобы прокручивать текст по вертикали. Обратите внимание на
+плагин [throw-props][10], который добавляет эффект «броска» при окончании свайпа.
+У модулей есть разные сценарии поведения, которые подключаются как наборы
+компонентов. Они привязываются к определённым селекторам и имеют собственные
+настройки. Для движения элементов используется `translate`, `scale` для
+масштабирования, «горячие» точки для всплывающих подсказок, отладочные данные
+для визуального тестирования,  слой для отображения названия перед запуском,
+слой для эффектов и некоторые другие вещи. Всё это добавляется в структуру
+документа и управляется элементом-родителем внутри модуля. С таким подходом мы
+можем показывать разные истории с помощью всего лишь [файла настроек][11], 
+которые определяет, какие ресурсы загружать и настраивает разные типы модулей и
+компонентов.
+
+### «Ряды» картинок
+Самым сложным с точки зрения производительности и объёма загружаемых
+данных оказалась разработка модуля для «рядов» картинок. По этой теме уже немало
+[написано][12]. На мобильных и планшетах мы заменяем их статичным изображением.
+Это всё ещё слишком большой объём данных для обработки и хранения в памяти, если
+мы хотим добиться выского качества на мобильных устройствах. Мы пробовали
+несколько альтернативных подходов. Сначала мы пробовали использование фоновой
+картинки и спрайтов, но это привело к проблемам с памятью и задержкой, когда
+процессору нужно было переключаться между разными спрайтами. Потом мы пробовали
+заменять сами элементы `img`, но это тоже было очень медленно. Отрисовка кадра из
+спрайта с помощью `canvas` было наиболее быстрым, и мы решили использовать этот
+способ. Для того, чтобы сэкономить время для расчётов каждого кадра, изображение
+предварительно обрабатывается во временном `canvas`-е и сохраняется с помощью
+`putImageData()` в специальный массив, уже готовое к использованию. После этого
+оригинальный спрайт может быть удалён из памяти, так как мы храним только
+минимально необходимую информацию. Возможно, необработанные изображения занимали
+бы меньше памяти, но при нашем подходе производительность выше. Кадры довольно
+маленькие, всего 640x400, но это можно увидеть только при прокрутке. Когда 
+анимация останавливается, картинка большего разрешения сразу появляется поверх.
+
+    var canvas = document.createElement('canvas');
+    canvas.width = imageWidth;
+    canvas.height = imageHeight;
+
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(sheet, 0, 0);
+
+    var tilesX = imageWidth / tileWidth;
+    var tilesY = imageHeight / tileHeight;
+
+    var canvasPaste = canvas.cloneNode(false);
+    canvasPaste.width = tileWidth;
+    canvasPaste.height = tileHeight;
+
+    var i, j, canvasPasteTemp, imgData, 
+    var currentIndex = 0;
+    var startIndex = index * 16;
+    for (i = 0; i < tilesY; i++) {
+      for (j = 0; j < tilesX; j++) {
+        // Store the image data of each tile in the array.
+        canvasPasteTemp = canvasPaste.cloneNode(false);
+        imgData = ctx.getImageData(j * tileWidth, i * tileHeight, tileWidth, tileHeight);
+        canvasPasteTemp.getContext('2d').putImageData(imgData, 0, 0);
+
+        list[ startIndex + currentIndex ] = imgData;
+
+        currentIndex++;
+      }
+    }
+
+Спрайты создаются с помощью [Imagemagick][13]. Здесь есть простой
+[пример на GitHub][14], который показывает, как создать спрайт из
+картинок в папке.
         
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(sheet, 0, 0);
-        
-        var tilesX = imageWidth / tileWidth;
-        var tilesY = imageHeight / tileHeight;
-        
-        var canvasPaste = canvas.cloneNode(false);
-        canvasPaste.width = tileWidth;
-        canvasPaste.height = tileHeight;
-        
-        var i, j, canvasPasteTemp, imgData, 
-        var currentIndex = 0;
-        var startIndex = index * 16;
-        for (i = 0; i 
-        
-        The sprite-sheets are generated with [Imagemagick][13]. Here is a simple [example on GitHub][14] that shows how to create a spritesheet of all images inside a folder.
-        
-        
-        
-        ### Animating the modules
-        
-        
-        To place the modules on the timeline, a hidden representation of the timeline, displayed offscreen, keeps track on the ‘playhead’ and the width of the timeline. This can be done with just code, but it was good with a visual representation when developing and debugging. When running for real it’s just updated on resize to set dimensions. Some modules fills the viewport and some have their own ratio, so it was a little tricky to scale and position everything in all resolutions so everything is visible and not cropped too much. Each module has two progress indicators, one for the visible position on screen and one for the duration of the module itself. When making parallax movement it’s often hard to calculate start- and end-position of objects to sync with the expected position when it’s in view. It’s good to know exactly when a module enters the view, plays its internal timeline and when it animates out of view again.
-        
-        <figure></figure>
-        
-        Each module has a subtle black layer on top that adjusts its opacity so it’s fully transparent when it’s in the center position. This helps you to focus on one module at a time, which enhances the experience.
-        
-        
-        
-        ### Page performance
-        
-        Moving from a functioning prototype to a jank-free release version means going from guessing to knowing of what happens in the browser. This is where Chrome DevTools is your best friend.
-        
-        We have spent quite a lot of time optimising the site. Forcing hardware-acceleration is one of the most important tools of course to get smooth animations. But also hunting 
-        
-        [colorful columns][15] and red rectangles in Chrome DevTools. There are many good articles about the topics, and you should read them [all][16]. The reward for removing skipping frames is instant, but so is the frustration when they return again. And they will. It's an ongoing process that needs iterations.
-        
-        Watch the layers panel (only in Canary) and the “paint rectangles” in Chrome DevTools. If, for example, child elements need to be updated per frame and be painted you should investigate if it’s faster to rearrange the layers to minimize the areas that need to be painted as much as possible.
-        
-        
-        
-        I like to use TweenMax from Greensock for tweening properties, transforms and CSS. Think in containers, visualise your structure as you add new layers. Keep in mind that existing transforms can be overwritten by new transforms. The translateZ(0) that forced hardware acceleration in your CSS class is replaced by a 2D matrix if you tween 2D values only. To keep the layer in acceleration mode in those cases, use the property “force3D:true” in the tween to make a 3D matrix instead of a 2D matrix. It’s easy to forget when you combine CSS and JavaScript tweens to set styles.
-        
-        
-        
-        Don’t force hardware acceleration where it’s not needed. GPU memory can quickly fill up and cause unwanted results when you want to hardware-accelerate many containers, especially on iOS where memory have more constraints. To load smaller assets and scale them up with css and disable some of the effects in mobile mode made huge improvements.
-        
-        
-        
-        [Memory leaks][17] was another field we needed to improve our skills in. When navigating between the different WebGL experiences a lot of objects, materials, textures and geometry are created. If those are not ready for garbage collection when you navigate away and remove the section they will probably cause the device to crash after a while when it runs out of memory.
-        
-        <figure>
-        
-        ![][18]<figcaption>Exiting a section with a failing dispose function.</figcaption></figure><figure>![][19]<figcaption>Much better!</figcaption></figure>
-        To find the leak it was pretty straight forward workflow in DevTools, recording the timeline and capturing heap snapshots. It’s easier if there are specific objects, like 3D geometry or a specific library, that you can filter out. In the example above it turned out that the 3D scene was still around and also an array that stored geometry was not cleared. If you find it hard to locate where the object lives, there is a nice feature that let you view this called [retaining paths][20]. Just click the object you want to inspect in the heap snapshot and you get the information in a panel below. Using a good structure with smaller objects helps when locating your references.
-        
-        <figure>
-        
-        ![][21]<figcaption>The scene was referenced in the EffectComposer.</figcaption></figure>
-        In general, it's healthy to think twice before you manipulate the DOM. When you do, think about efficiency. Don't manipulate the DOM inside a game loop if you can help it. Store references in variables for reuse. If you need to search for an element, use the shortest route by storing references to strategic containers and searching inside the nearest ancestor element.
-        
-        
-        
-        Delay reading dimensions of newly added elements or when removing/adding classes if you experience layout bugs. Or make sure [Layout is triggered][22]. Sometimes the browser batch changes to styles, and will not update after the next layout trigger. This can really be a big problem sometimes, but it’s there for a reason, so try to learn how it’s working behind the scenes and you will gain a lot.
-        
-        
-        
-        ### Fullscreen
-        
-        
-        When available, you have the option to put the site in fullscreen-mode in the menu via the Fullscreen API. But on devices there is also the browsers decision to put it into fullscreen. Safari on iOS had previously a hack to let you control that, but that is not available anymore so you have to prepare your design to work without it when making a non-scrolling page. We can probably expect updates on this in future updates, since it has broke a lot of web-apps.
-        
-        
-        
-        ## Assets {#toc-assets}
-        
-        <figure>
-        
-        ![][23]<figcaption>Animated instructions for the experiments.</figcaption></figure>
-        Throughout the site we have a lot of different types of assets, we use images (PNG and JPEG), SVG (inline and background), spritesheets (PNG), custom icon fonts and Adobe Edge animations. We use PNGs for assets and animations (spritesheets) where the element can't be vector based, otherwise we try to use SVGs as much as possible.
-        
-        
-        
-        The vector format means no loss of quality, even if we scale it. 1 file for all devices.
-        
+### Анимация модулей.
+To place the modules on the timeline, a hidden representation of the timeline,
+displayed offscreen, keeps track on the ‘playhead’ and the width of the timeline. This can be done with just code, but it was good with a visual representation when developing and debugging. When running for real it’s just updated on resize to set dimensions. Some modules fills the viewport and some have their own ratio, so it was a little tricky to scale and position everything in all resolutions so everything is visible and not cropped too much. Each module has two progress indicators, one for the visible position on screen and one for the duration of the module itself. When making parallax movement it’s often hard to calculate start- and end-position of objects to sync with the expected position when it’s in view. It’s good to know exactly when a module enters the view, plays its internal timeline and when it animates out of view again.
+
+<figure></figure>
+
+Each module has a subtle black layer on top that adjusts its opacity so it’s fully transparent when it’s in the center position. This helps you to focus on one module at a time, which enhances the experience.
+
+
+
+### Page performance
+
+Moving from a functioning prototype to a jank-free release version means going from guessing to knowing of what happens in the browser. This is where Chrome DevTools is your best friend.
+
+We have spent quite a lot of time optimising the site. Forcing hardware-acceleration is one of the most important tools of course to get smooth animations. But also hunting 
+
+[colorful columns][15] and red rectangles in Chrome DevTools. There are many good articles about the topics, and you should read them [all][16]. The reward for removing skipping frames is instant, but so is the frustration when they return again. And they will. It's an ongoing process that needs iterations.
+
+Watch the layers panel (only in Canary) and the “paint rectangles” in Chrome DevTools. If, for example, child elements need to be updated per frame and be painted you should investigate if it’s faster to rearrange the layers to minimize the areas that need to be painted as much as possible.
+
+
+
+I like to use TweenMax from Greensock for tweening properties, transforms and CSS. Think in containers, visualise your structure as you add new layers. Keep in mind that existing transforms can be overwritten by new transforms. The translateZ(0) that forced hardware acceleration in your CSS class is replaced by a 2D matrix if you tween 2D values only. To keep the layer in acceleration mode in those cases, use the property “force3D:true” in the tween to make a 3D matrix instead of a 2D matrix. It’s easy to forget when you combine CSS and JavaScript tweens to set styles.
+
+
+
+Don’t force hardware acceleration where it’s not needed. GPU memory can quickly fill up and cause unwanted results when you want to hardware-accelerate many containers, especially on iOS where memory have more constraints. To load smaller assets and scale them up with css and disable some of the effects in mobile mode made huge improvements.
+
+
+
+[Memory leaks][17] was another field we needed to improve our skills in. When navigating between the different WebGL experiences a lot of objects, materials, textures and geometry are created. If those are not ready for garbage collection when you navigate away and remove the section they will probably cause the device to crash after a while when it runs out of memory.
+
+<figure>
+
+![][18]<figcaption>Exiting a section with a failing dispose function.</figcaption></figure><figure>![][19]<figcaption>Much better!</figcaption></figure>
+To find the leak it was pretty straight forward workflow in DevTools, recording the timeline and capturing heap snapshots. It’s easier if there are specific objects, like 3D geometry or a specific library, that you can filter out. In the example above it turned out that the 3D scene was still around and also an array that stored geometry was not cleared. If you find it hard to locate where the object lives, there is a nice feature that let you view this called [retaining paths][20]. Just click the object you want to inspect in the heap snapshot and you get the information in a panel below. Using a good structure with smaller objects helps when locating your references.
+
+<figure>
+
+![][21]<figcaption>The scene was referenced in the EffectComposer.</figcaption></figure>
+In general, it's healthy to think twice before you manipulate the DOM. When you do, think about efficiency. Don't manipulate the DOM inside a game loop if you can help it. Store references in variables for reuse. If you need to search for an element, use the shortest route by storing references to strategic containers and searching inside the nearest ancestor element.
+
+
+
+Delay reading dimensions of newly added elements or when removing/adding classes if you experience layout bugs. Or make sure [Layout is triggered][22]. Sometimes the browser batch changes to styles, and will not update after the next layout trigger. This can really be a big problem sometimes, but it’s there for a reason, so try to learn how it’s working behind the scenes and you will gain a lot.
+
+
+
+### Fullscreen
+
+
+When available, you have the option to put the site in fullscreen-mode in the menu via the Fullscreen API. But on devices there is also the browsers decision to put it into fullscreen. Safari on iOS had previously a hack to let you control that, but that is not available anymore so you have to prepare your design to work without it when making a non-scrolling page. We can probably expect updates on this in future updates, since it has broke a lot of web-apps.
+
+
+
+## Assets {#toc-assets}
+
+<figure>
+
+![][23]<figcaption>Animated instructions for the experiments.</figcaption></figure>
+Throughout the site we have a lot of different types of assets, we use images (PNG and JPEG), SVG (inline and background), spritesheets (PNG), custom icon fonts and Adobe Edge animations. We use PNGs for assets and animations (spritesheets) where the element can't be vector based, otherwise we try to use SVGs as much as possible.
+
+
+
+The vector format means no loss of quality, even if we scale it. 1 file for all devices.
+
 
 *   Small file size.
 *   We can animate each part separately (perfect for advanced animations). As
@@ -353,3 +381,4 @@ time on these types of projects, going from guessing to knowing.
 
  [22]: http://www.html5rocks.com/en/tutorials/speed/high-performance-animations/#toc-animating-layout-properties
  [23]: img/instructions.jpg
+ [24]: img/einaroberg.png
